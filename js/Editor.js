@@ -245,7 +245,7 @@ Editor.prototype.updateCursorPosition = function(x, y)
 
 Editor.prototype.getSnapRadius = function()
 {
-	return 8;
+	return 10 / this.getZoom();
 }
 
 Editor.prototype.invalidate = function()
