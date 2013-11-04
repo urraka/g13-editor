@@ -20,7 +20,10 @@ function object_copy(object)
 	var result = {};
 
 	for (var i in object)
-		result[i] = object[i];
+	{
+		if (object.hasOwnProperty(i))
+			result[i] = object[i];
+	}
 
 	return result;
 }
@@ -195,4 +198,45 @@ function triangle_contains(ax, ay, bx, by, cx, cy, x, y)
 	var t = (ax * by - ay * bx + (ay - by) * x + (bx - ax) * y) * sign;
 
 	return s >= 0 && t >= 0 && (s + t) <= (2 * A * sign);
+}
+
+function is_triangle_ccw(ax, ay, bx, by, cx, cy)
+{
+	return (bx - ax) * (cy - by) - (cx - bx) * (by - ay) > 0;
+}
+
+function is_polygon_ccw(points)
+{
+	var N = points.length;
+	var k = 0;
+
+	for (var i = 1; i < N; i++)
+	{
+		var p = points[i];
+		var lm = points[k];
+
+		if (p.x < lm.x || (p.x === lm.x && p.y < lm.y))
+			k = i;
+	}
+
+	var a = (k - 1 + N) % N;
+	var b = k;
+	var c = (k + 1) % N;
+
+	var p = points;
+
+	return is_triangle_ccw(p[a].x, p[a].y, p[b].x, p[b].y, p[c].x, p[c].y);
+}
+
+function luminance(r, g, b)
+{
+	r /= 255;
+	g /= 255;
+	b /= 255;
+
+	r = r <= 0.3928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+	g = g <= 0.3928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+	b = b <= 0.3928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+
+	return r * 0.2126 + g * 0.7152 + b * 0.0722;
 }

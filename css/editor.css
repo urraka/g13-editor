@@ -28,3 +28,14 @@ html, body, #layout {
 #panel-view {
 	height: 100%;
 }
+
+.file-dialog > div div:not([class]) {
+	margin: 7px;
+}
+
+.file-dialog input {
+	box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	outline: none;
+	width: 100%;
+}

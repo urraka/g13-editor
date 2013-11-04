@@ -23,15 +23,20 @@
 	-moz-osx-font-smoothing: grayscale;
 }
 
+.icon-bullseye:before            {content: "\e602";}
+.icon-flag:before                {content: "\e603";}
 .icon-zoom-in:before             {content: "\f00e";}
 .icon-zoom-out:before            {content: "\f010";}
 .icon-ok:before                  {content: "\f00c";}
+.icon-stack:before               {content: "\e604";}
 .icon-remove:before              {content: "\f00d";}
 .icon-search:before              {content: "\f002";}
 .icon-cog:before                 {content: "\f013";}
 .icon-trash:before               {content: "\f014";}
 .icon-th:before                  {content: "\f00a";}
+.icon-importfile:before          {content: "\e608";}
 .icon-th-large:before            {content: "\f009";}
+.icon-exportfile:before          {content: "\e609";}
 .icon-refresh:before             {content: "\f021";}
 .icon-repeat:before              {content: "\f01e";}
 .icon-lock:before                {content: "\f023";}

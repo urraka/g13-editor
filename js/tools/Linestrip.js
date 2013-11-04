@@ -18,10 +18,19 @@ Linestrip.prototype.addPoint = function(editor, x, y)
 	if (this.points === null)
 		this.points = [];
 
+	this.pushPoint(x, y);
+
+	return true;
+}
+
+Linestrip.prototype.pushPoint = function(x, y)
+{
 	this.points.push({x: x, y: y});
+	this.setBufferPoint(this.points.length - 1, x, y);
+}
 
-	var index = this.points.length - 1;
-
+Linestrip.prototype.setBufferPoint = function(index, x, y)
+{
 	if (this.vbo.size <= (index + 1))
 	{
 		var size = this.vbo.size * 2;
@@ -29,8 +38,6 @@ Linestrip.prototype.addPoint = function(editor, x, y)
 	}
 
 	this.vbo.set(index, x, y, 0, 0, 0, 0, 0, 1);
-
-	return true;
 }
 
 Linestrip.prototype.intersects = function(x, y)
@@ -214,7 +221,7 @@ Linestrip.prototype.on["draw"] = function(editor, event)
 		gfx.draw(this.vbo, points.length + 1);
 		gfx.pixelAlign(false);
 	}
-	else
+	else if (editor.isSnapping())
 	{
 		var x = editor.cursor.snapX;
 		var y = editor.cursor.snapY;

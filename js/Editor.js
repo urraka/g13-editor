@@ -5,6 +5,10 @@ g13["Editor"] = Editor;
 
 window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame;
 
+var cache = {
+	matrix: mat3.create()
+};
+
 function Editor()
 {
 	var self = this;
@@ -59,6 +63,11 @@ function Editor()
 
 	this.cursor = {
 		active: false,
+		snapping: false,
+		snapTarget: {
+			object: null,
+			data: null
+		},
 		current: null,
 		absX: 0,
 		absY: 0,
@@ -100,6 +109,26 @@ Editor.prototype.newMap = function(width, height)
 	this.map.resize(width, height);
 
 	this.event({type: "newmap", map: this.map});
+}
+
+Editor.prototype.save = function()
+{
+	ui.showModal(this.ui.saveDialog, function(result) {
+		if (result === "ok")
+			console.log("should save");
+	});
+}
+
+Editor.prototype.export = function()
+{
+	var data = JSON.stringify(this.map.export());
+	var url = URL.createObjectURL(new Blob([data], {type: "application/octet-stream"}));
+
+	var a = document.createElement("a");
+
+	a.setAttribute("href", url);
+	a.setAttribute("download", "map.json");
+	a.click();
 }
 
 Editor.prototype.getCanvas = function()
@@ -158,6 +187,14 @@ Editor.prototype.setCursor = function(cursor)
 	}
 }
 
+Editor.prototype.getCursorClass = function()
+{
+	if (this.cursor.current !== null)
+		return "cursor-" + this.cursor.current;
+
+	return "";
+}
+
 Editor.prototype.isCursorActive = function()
 {
 	return this.cursor.active;
@@ -211,6 +248,9 @@ Editor.prototype.updateCursorPosition = function(x, y)
 	this.cursor.mapX = (x - cx - cw / 2) * (1 / vz) - vx;
 	this.cursor.mapY = (y - cy - ch / 2) * (1 / vz) - vy;
 
+	this.cursor.snapping = false;
+	this.cursor.snapTarget.object = null;
+	this.cursor.snapTarget.data = null;
 	this.cursor.snapX = this.cursor.mapX;
 	this.cursor.snapY = this.cursor.mapY;
 
@@ -218,11 +258,11 @@ Editor.prototype.updateCursorPosition = function(x, y)
 	var x = this.cursor.snapX;
 	var y = this.cursor.snapY;
 
-	var objects = this.map.retrieve(x - radius, y - radius, 2 * radius, 2 * radius);
-	var p = {x: 0, y: 0};
+	var p = {x: 0, y: 0, data:null};
 
 	if ("snaptest" in this.tools.current && this.tools.current.snaptest(x, y, radius, p))
 	{
+		this.cursor.snapping = true;
 		this.cursor.snapX = p.x;
 		this.cursor.snapY = p.y;
 	}
@@ -230,17 +270,35 @@ Editor.prototype.updateCursorPosition = function(x, y)
 	{
 		var sel = this.getSelection();
 		var dragging = this.tools.current === this.tools["selection"] && this.tools.current.dragging;
+		var objects = this.map.retrieve(x - radius, y - radius, 2 * radius, 2 * radius);
 
 		for (var i = 0; i < objects.length; i++)
 		{
-			if (objects[i].snaptest(x, y, radius, p) && !(dragging && sel.contains(objects[i])))
+			if (dragging && sel.contains(objects[i]))
+				continue;
+
+			if (objects[i].snaptest(x, y, radius, p))
 			{
+				this.cursor.snapping = true;
+				this.cursor.snapTarget.object = objects[i];
+				this.cursor.snapTarget.data = p.data;
 				this.cursor.snapX = p.x;
 				this.cursor.snapY = p.y;
+
 				break;
 			}
 		}
 	}
+}
+
+Editor.prototype.isSnapping = function()
+{
+	return this.cursor.snapping;
+}
+
+Editor.prototype.getSnapTarget = function()
+{
+	return this.cursor.snapTarget;
 }
 
 Editor.prototype.getSnapRadius = function()

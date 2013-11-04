@@ -15,6 +15,7 @@ function UI(editor)
 		"new":     "icon-file",
 		"open":    "icon-folder-open-alt",
 		"save":    "icon-save",
+		"export":  "icon-exportfile",
 		"copy":    "icon-copy",
 		"cut":     "icon-cut",
 		"paste":   "icon-paste",
@@ -30,7 +31,8 @@ function UI(editor)
 
 	ui.command("new"      , function() { editor.newMap(3000*2, 1600*2); });
 	ui.command("open"     , function() {                                });
-	ui.command("save"     , function() {                                });
+	ui.command("save"     , function() { editor.save();                 });
+	ui.command("export"   , function() { editor.export();               });
 	ui.command("copy"     , function() {                                });
 	ui.command("cut"      , function() {                                });
 	ui.command("paste"    , function() {                                });
@@ -68,13 +70,16 @@ function UI(editor)
 	var btn = ui.IconButton;
 
 	$(panels["top"]).append(
+		ui.TitleBar("Untitled"),
 		ui.MenuBar([
 			ui.MenuItem({
 				caption: "File",
 				submenu: ui.Menu([
-					ui.MenuItem({caption: "New...",  command: "new"}),
-					ui.MenuItem({caption: "Open...", command: "open"}),
-					ui.MenuItem({caption: "Save",    command: "save"})
+					ui.MenuItem({caption: "New...",    command: "new"}),
+					ui.MenuItem({caption: "Open...",   command: "open"}),
+					ui.MenuItem({caption: "Save",      command: "save"}),
+					ui.Separator(),
+					ui.MenuItem({caption: "Export...", command: "export"})
 				])
 			}),
 			ui.MenuItem({
@@ -90,19 +95,20 @@ function UI(editor)
 		ui.Toolbar({
 			layout: "horizontal",
 			items: [
-				btn({icon: ico["new"],     tooltip: "New...",   command: "new"}),
-				btn({icon: ico["open"],    tooltip: "Open...",  command: "open"}),
-				btn({icon: ico["save"],    tooltip: "Save",     command: "save"}),
+				btn({icon: ico["new"],     tooltip: "New...",    command: "new"}),
+				btn({icon: ico["open"],    tooltip: "Open...",   command: "open"}),
+				btn({icon: ico["save"],    tooltip: "Save",      command: "save"}),
+				btn({icon: ico["export"],  tooltip: "Export...", command: "export"}),
 				ui.Separator(),
-				btn({icon: ico["copy"],    tooltip: "Copy",     command: "copy"}),
-				btn({icon: ico["cut"],     tooltip: "Cut",      command: "cut"}),
-				btn({icon: ico["paste"],   tooltip: "Paste",    command: "paste"}),
+				btn({icon: ico["copy"],    tooltip: "Copy",      command: "copy"}),
+				btn({icon: ico["cut"],     tooltip: "Cut",       command: "cut"}),
+				btn({icon: ico["paste"],   tooltip: "Paste",     command: "paste"}),
 				ui.Separator(),
-				btn({icon: ico["undo"],    tooltip: "Undo",     command: "undo"}),
-				btn({icon: ico["redo"],    tooltip: "Redo",     command: "redo"}),
+				btn({icon: ico["undo"],    tooltip: "Undo",      command: "undo"}),
+				btn({icon: ico["redo"],    tooltip: "Redo",      command: "redo"}),
 				ui.Separator(),
-				btn({icon: ico["zoomin"],  tooltip: "Zoom In",  command: "zoomin"}),
-				btn({icon: ico["zoomout"], tooltip: "Zoom Out", command: "zoomout"})
+				btn({icon: ico["zoomin"],  tooltip: "Zoom In",   command: "zoomin"}),
+				btn({icon: ico["zoomout"], tooltip: "Zoom Out",  command: "zoomout"})
 			]
 		}),
 		ui.Separator()
@@ -150,9 +156,10 @@ function UI(editor)
 
 	// events
 
-	$(document).on("contextmenu", function()
+	$(document).on("contextmenu", function(event)
 	{
-		return false;
+		if (event.target.nodeName !== "INPUT")
+			return false;
 	});
 
 	$(document).on("keydown", function(e)
@@ -185,6 +192,21 @@ function UI(editor)
 		else
 			fwd(new $.Event("wheel", {delta: 1}));
 	});
+
+	// save/open dialog
+
+	this.saveDialog = ui.Dialog("Save as...", [
+		$('<div><input type="text" class="setfocus" /></div>')[0],
+		ui.Button("Save", "ok"),
+		ui.Button("Cancel", "cancel")
+	]);
+
+	$(this.saveDialog).addClass("file-dialog");
+}
+
+UI.prototype.setTitle = function(text)
+{
+	$(this.panels["top"]).find(".ui-title-bar label").text(text);
 }
 
 UI.prototype.on = {};

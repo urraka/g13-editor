@@ -1,5 +1,7 @@
 (function() {
 
+var currentDialog = null;
+
 // -----------------------------------------------------------------------------
 // Commands & key bindings
 // -----------------------------------------------------------------------------
@@ -93,6 +95,9 @@ function bind(keys, cmd)
 $(function() {
 	$(document).on("keydown", function(event)
 	{
+		if (currentDialog !== null)
+			return;
+
 		var mode = 0;
 
 		mode |= event.altKey ? 1 : 0;
@@ -109,6 +114,16 @@ $(function() {
 // -----------------------------------------------------------------------------
 // Constructors
 // -----------------------------------------------------------------------------
+
+function TitleBar(text)
+{
+	var titlebar = $(document.createElement("div"));
+
+	titlebar.addClass("ui-title-bar");
+	titlebar.append($(document.createElement("label")).text(text));
+
+	return titlebar[0];
+}
 
 function MenuBar(items)
 {
@@ -217,6 +232,20 @@ function IconButton(params)
 	return button[0];
 }
 
+function Button(caption, modalResult)
+{
+	var button = $(document.createElement("div"));
+
+	button.addClass("ui-button");
+	button.attr("tabindex", "0");
+	button.text(caption);
+
+	if (modalResult === "ok" || modalResult === "cancel")
+		button.addClass("ui-modal-" + modalResult);
+
+	return button[0];
+}
+
 function StatusBar(content)
 {
 	var statusbar = $(document.createElement("div"));
@@ -224,6 +253,20 @@ function StatusBar(content)
 	statusbar.addClass("ui-statusbar");
 
 	return statusbar[0];
+}
+
+function Dialog(title, contents)
+{
+	var dlg = $(document.createElement("div"));
+	var inner = $(document.createElement("div"));
+
+	dlg.append(inner);
+	dlg.addClass("ui-dialog");
+
+	inner.append(TitleBar(title));
+	inner.append(contents);
+
+	return dlg[0];
 }
 
 // -----------------------------------------------------------------------------
@@ -253,7 +296,7 @@ function hasCapture(element)
 	return element === capturedElement;
 }
 
-function capture(element)
+function capture(element, classes)
 {
 	capturedElement = element;
 
@@ -266,12 +309,119 @@ function capture(element)
 
 	var capturer = $(document.createElement("div"));
 	capturer.addClass("ui-capture");
-	capturer.addClass($(element).attr("class"));
+	capturer.addClass(classes);
 
 	$(window).on("mouseup", captureHandler);
 	capturer.on("mousemove mousedown mouseup", captureHandler);
 
 	capturer.appendTo(document.body);
+}
+
+function showModal(dlg, doneHandler)
+{
+	dlg = $(dlg).clone(true);
+
+	var prevDialog = currentDialog;
+	currentDialog = dlg;
+
+	$(".ui-menu, .ui-menu-bar").trigger("close");
+
+	var capturer = $(document.createElement("div"));
+	capturer.addClass("ui-capture");
+	capturer.append(dlg);
+
+	var flickerTimer = null;
+
+	capturer.on("mousemove mousedown mouseup", function(event) {
+		event.stopPropagation();
+
+		if (flickerTimer === null && event.type === "mousedown" && event.target === this)
+		{
+			var titlebar = dlg.find(".ui-title-bar");
+			titlebar.addClass("ui-dialog-flicker");
+
+			flickerTimer = setTimeout(function() {
+				titlebar.removeClass("ui-dialog-flicker");
+				flickerTimer = null;
+			}, 1000);
+		}
+	});
+
+	var xhook = 0;
+	var yhook = 0;
+	var dragging = false;
+
+	function mousedown(event)
+	{
+		xhook = event.pageX;
+		yhook = event.pageY;
+		dragging = true;
+	}
+
+	function mouseup(event)
+	{
+		dragging = false;
+	}
+
+	function mousemove(event)
+	{
+		if (!dragging)
+			return;
+
+		var dx = event.pageX - xhook;
+		var dy = event.pageY - yhook;
+
+		dlg.css({
+			left: dlg.position().left + dx,
+			top: dlg.position().top + dy
+		});
+
+		xhook = event.pageX;
+		yhook = event.pageY;
+	}
+
+	function done(result)
+	{
+		$(window).off("mouseup", mouseup);
+		$(document).off("keydown", keydown);
+
+		if (doneHandler)
+			doneHandler.call(dlg[0], result);
+
+		dlg.detach();
+		capturer.remove();
+
+		currentDialog = prevDialog;
+	}
+
+	function keydown(event)
+	{
+		switch (event.which)
+		{
+			case Key["enter"]: done("ok"); break;
+			case Key["escape"]: done("cancel"); break;
+		}
+	}
+
+	dlg.on("click", ".ui-modal-ok", function() { done("ok"); });
+	dlg.on("click", ".ui-modal-cancel", function() { done("cancel"); });
+	dlg.on("mousedown", ".ui-title-bar", mousedown);
+	dlg.on("mouseup", ".ui-title-bar", mouseup);
+	$(window).on("mouseup", mouseup);
+	capturer.on("mousemove", mousemove);
+	$(document).on("keydown", keydown);
+
+	capturer.appendTo(document.body);
+
+	var w = dlg.width();
+	var h = dlg.height();
+
+	dlg.css({
+		left: (window.innerWidth - w) / 2,
+		top: (window.innerHeight - h) / 2
+	});
+
+	dlg.find(".setfocus").focus();
 }
 
 // -----------------------------------------------------------------------------
@@ -598,18 +748,22 @@ $(function() {
 
 ui = {};
 
+ui["TitleBar"]   = TitleBar;
 ui["MenuBar"]    = MenuBar;
 ui["Menu"]       = Menu;
 ui["MenuItem"]   = MenuItem;
 ui["Toolbar"]    = Toolbar;
 ui["IconButton"] = IconButton;
+ui["Button"]     = Button;
 ui["Separator"]  = Separator;
 ui["StatusBar"]  = StatusBar;
+ui["Dialog"]     = Dialog;
 ui["capture"]    = capture;
 ui["hasCapture"] = hasCapture;
 ui["command"]    = command;
 ui["bind"]       = bind;
 ui["enable"]     = enable;
 ui["disable"]    = disable;
+ui["showModal"]  = showModal;
 
 })();

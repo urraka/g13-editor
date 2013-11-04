@@ -1,9 +1,15 @@
 /* labels */
 
-*[class*='ui-'] label {
+*[class*='ui-'] label, .ui-button {
 	font-family: "Segoe UI", Tahoma;
 	font-size: 12px;
 	line-height: 1.5em;
+}
+
+.ui-dialog input[type="text"] {
+	font-family: "Segoe UI", Tahoma;
+	font-size: 12px;
+	padding: 1px 2px;
 }
 
 /* container for popups */
@@ -14,7 +20,7 @@
 	left: 0;
 }
 
-/* for capturing mouse events */
+/* element for capturing mouse events */
 
 .ui-capture {
 	position: absolute;
@@ -40,6 +46,21 @@
 	border-left: 1px solid #808080;
 	border-right: 1px solid #FFF;
 	height: 100%;
+}
+
+/* title-bar */
+
+.ui-title-bar {
+	position: relative;
+	background: linear-gradient(90deg, #0A246A, #A6CAF0);
+	font-weight: bold;
+	color: #FFF;
+	padding: 0 3px;
+}
+
+.ui-title-bar label {
+	font-size: 11px;
+	line-height: 1.7em;
 }
 
 /* menu-bar */
@@ -239,4 +260,116 @@
 
 .ui-statusbar {
 	padding: 0 2px;
+}
+
+/* dialog */
+
+.ui-dialog {
+	position: absolute;
+	background-color: #D4D0C8;
+	border-right: 1px solid #404040;
+	border-bottom: 1px solid #404040;
+	padding: 1px 0 0 1px;
+}
+
+.ui-dialog > div {
+	position: relative;
+	border-left: 1px solid #FFF;
+	border-top: 1px solid #FFF;
+	border-right: 1px solid #808080;
+	border-bottom: 1px solid #808080;
+	padding: 2px;
+}
+
+@keyframes ui-dlg-flicker {
+	  0% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 10% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 20% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 30% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 40% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 50% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 60% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 70% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 80% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 90% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	100% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+}
+
+@-webkit-keyframes ui-dlg-flicker {
+	  0% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 10% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 20% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 30% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 40% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 50% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 60% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 70% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	 80% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+	 90% { background: linear-gradient(90deg, #0A246A, #A6CAF0); color: #FFFFFF; }
+	100% { background: linear-gradient(90deg, #808080, #C0C0C0); color: #D4D0C8; }
+}
+
+.ui-dialog-flicker {
+	animation: ui-dlg-flicker 0.8s;
+	-webkit-animation: ui-dlg-flicker 0.8s;
+}
+
+/* Button */
+
+.ui-button {
+	display: inline-block;
+	position: relative;
+	color: #000;
+	background-color: #D4D0C8;
+	padding: 2px 9px 3px 8px;
+	margin: 7px;
+	white-space: nowrap;
+	line-height: 1.7em;
+	font-size: 11px;
+	text-align: center;
+	min-width: 6em;
+	vertical-align: top;
+}
+
+.ui-button:before, .ui-button:after {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0;
+}
+
+.ui-button:before {
+	right: 1px;
+	bottom: 1px;
+	border-left: 1px solid #FFF;
+	border-top: 1px solid #FFF;
+	border-right: 1px solid #808080;
+	border-bottom: 1px solid #808080;
+}
+
+.ui-button:after {
+	right: 0;
+	bottom: 0;
+	border-right: 1px solid #404040;
+	border-bottom: 1px solid #404040;
+}
+
+.ui-button:focus {
+	padding: 1px 8px 2px 7px;
+	border: 1px solid #000;
+	outline: 0 none;
+}
+
+.ui-button:active:hover {
+	padding: 2px 7px 1px 8px;
+}
+
+.ui-button:active:hover:before {
+	border: 1px solid #808080;
+	right: 0;
+	bottom: 0;
+}
+
+.ui-button:active:hover:after {
+	border: 0 none;
 }

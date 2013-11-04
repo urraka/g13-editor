@@ -103,6 +103,67 @@ Map.prototype.draw = function(editor)
 	}
 }
 
+Map.prototype.export = function()
+{
+	var data = {
+		width: this.width,
+		height: this.height,
+		ground: {vbo: [], ibo: []},
+		grass: [],
+		collision: []
+	};
+
+	var base = 0;
+
+	for (var i = 0; i < this.polygons.length; i++)
+	{
+		var polyData = this.polygons[i].export();
+
+		for (var j = 0; j < polyData.ibo.length; j++)
+			polyData.ibo[j] += base;
+
+		data.ground.vbo = data.ground.vbo.concat(polyData.vbo);
+		data.ground.ibo = data.ground.ibo.concat(polyData.ibo);
+
+		base += polyData.vbo.length;
+	}
+
+	for (var i = 0; i < this.grass.length; i++)
+	{
+		for (var j = 0; j < this.grass[i].sprites.length; j++)
+		{
+			var sprite = object_copy(this.grass[i].sprites[j]);
+
+			sprite.x += this.grass[i].x;
+			sprite.y += this.grass[i].y;
+
+			data.grass.push(sprite);
+		}
+	}
+
+	for (var i = 0; i < this.polygons.length; i++)
+	{
+		var points = this.polygons[i].points.slice(0);
+
+		if (this.polygons[i].ccw)
+			points.reverse();
+
+		for (var j = 0; j < points.length; j++)
+		{
+			points[j] = {
+				x: Math.floor((points[j].x + this.polygons[i].x) * 65536),
+				y: Math.floor((points[j].y + this.polygons[i].y) * 65536)
+			};
+		}
+
+		points.push({x: points[0].x, y: points[0].y});
+
+		data.collision.push(points);
+	}
+
+	return data;
+}
+
 Map.prototype.serialize = function()
 {
 }

@@ -33,6 +33,8 @@ function Polygon(points)
 	this.updateLocalBounds();
 	this.updateBounds();
 
+	this.ccw = is_polygon_ccw(this.points);
+
 	// triangulate
 
 	points = this.points;
@@ -44,6 +46,8 @@ function Polygon(points)
 
 	var sweepContext = new poly2tri.SweepContext(contour);
 	sweepContext.triangulate();
+
+	this.triangulation = sweepContext;
 
 	var triangles = sweepContext.getTriangles() || [];
 	this.triangles = triangles;
@@ -74,6 +78,35 @@ function Polygon(points)
 
 }
 
+Polygon.prototype.export = function()
+{
+	var data = {};
+
+	data.vbo = [];
+	data.ibo = [];
+
+	for (var i = 0; i < this.triangulation.pointCount(); i++)
+	{
+		var p = this.triangulation.getPoint(i);
+
+		data.vbo.push({
+			x: p.x + this.x,
+			y: p.y + this.y,
+			u: 2 * (p.x + this.x) / 512,
+			v: 2 * (p.y + this.y) / 512
+		});
+	}
+
+	for (var i = 0; i < this.triangles.length; i++)
+	{
+		data.ibo.push(this.triangles[i].getPoint(0).index);
+		data.ibo.push(this.triangles[i].getPoint(1).index);
+		data.ibo.push(this.triangles[i].getPoint(2).index);
+	}
+
+	return data;
+}
+
 Polygon.prototype.updateLocalBounds = function()
 {
 	this.localBounds.x = 0;
@@ -100,6 +133,14 @@ Polygon.prototype.updateLocalBounds = function()
 	}
 }
 
+Polygon.prototype.getPoint = function(index, point)
+{
+	point.x = this.points[index].x + this.x;
+	point.y = this.points[index].y + this.y;
+
+	return point;
+}
+
 Polygon.prototype.snaptest = function(x, y, r, p)
 {
 	var bx = this.bounds.x - r;
@@ -124,6 +165,7 @@ Polygon.prototype.snaptest = function(x, y, r, p)
 		{
 			p.x = px;
 			p.y = py;
+			p.data = i;
 
 			return true;
 		}

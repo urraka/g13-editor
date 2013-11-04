@@ -130,7 +130,7 @@ Selection.prototype.on["mousedown"] = function(editor, event)
 				this.hook.y = y;
 
 				editor.setCursor("move");
-				ui.capture(editor.getCanvas());
+				ui.capture(editor.getCanvas(), editor.getCursorClass());
 
 				var undoData = {
 					objects: selection.objects.slice(0),
@@ -158,7 +158,7 @@ Selection.prototype.on["mousedown"] = function(editor, event)
 			this.hook.x = x;
 			this.hook.y = y;
 
-			ui.capture(editor.getCanvas());
+			ui.capture(editor.getCanvas(), editor.getCursorClass());
 		}
 	}
 

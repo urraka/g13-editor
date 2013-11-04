@@ -71,6 +71,7 @@ var shader = {
 		"void main(void)\n" +
 		"{\n" +
 		"	gl_FragColor = texture2D(sampler, texcoords) * color;\n" +
+		"	if (gl_FragColor.a <= 0.0) discard;" +
 		"}\n"
 };
 
@@ -766,13 +767,21 @@ function Texture(image)
 	}
 }
 
+Texture.prototype.update = function(x, y, width, height, data)
+{
+	gl.bindTexture(gl.TEXTURE_2D, this.id);
+	gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, width, height, this.format, gl.UNSIGNED_BYTE, data);
+
+	if (this.mipmap)
+		this.generateMipmap();
+}
+
 Texture.prototype.generateMipmap = function()
 {
+	this.mipmap = true;
+
 	if (this.loading)
-	{
-		this.mipmap = true;
 		return;
-	}
 
 	gl.bindTexture(gl.TEXTURE_2D, this.id);
 	gl.generateMipmap(gl.TEXTURE_2D);
