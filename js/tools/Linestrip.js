@@ -66,7 +66,7 @@ Linestrip.prototype.intersects = function(x, y)
 
 Linestrip.prototype.snaptest = function(x, y, r, p)
 {
-	if (this.points === null)
+	if (this.points === null || this.points.length === 1)
 		return false;
 
 	var points = this.points;
@@ -239,7 +239,6 @@ Linestrip.prototype.on["postdraw"] = function(editor, event)
 		var x = editor.cursor.snapX;
 		var y = editor.cursor.snapY;
 
-		this.vbo.set(0, x, y, 0, 0, 0, 0, 0, 1);
 		this.setBufferPoint(0, x, y);
 		this.draw(1);
 	}
