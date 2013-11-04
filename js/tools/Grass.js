@@ -43,7 +43,7 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 				start: editor.getSnapTarget().data
 			};
 		}
-		else
+		else if (editor.getSnapTarget().object === this.borderHook.object)
 		{
 			var poly = this.borderHook.object;
 			var start = this.borderHook.start;
@@ -61,6 +61,10 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 			this.borderHook = null;
 			return false;
 		}
+		else
+		{
+			this.borderHook = null;
+		}
 	}
 	else
 	{
@@ -73,7 +77,7 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 Grass.prototype.on["draw"] = function(editor, event)
 {
 	if (this.borderHook === null || this.points === null || this.ortho || !editor.isSnapping() ||
-		editor.getSnapTarget() === null || !(editor.getSnapTarget().object instanceof g13.Polygon))
+		editor.getSnapTarget() === null || editor.getSnapTarget().object !== this.borderHook.object)
 	{
 		g13.tools.Linestrip.prototype.on["draw"].call(this, editor, event);
 		return;
