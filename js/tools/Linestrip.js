@@ -37,7 +37,7 @@ Linestrip.prototype.setBufferPoint = function(index, x, y)
 		this.vbo.resize(size, gfx.Dynamic, true);
 	}
 
-	this.vbo.set(index, x, y, 0, 0, 0, 0, 0, 1);
+	this.vbo.set(index, x, y, 0, 0, 255, 255, 255, 1);
 }
 
 Linestrip.prototype.intersects = function(x, y)
@@ -86,6 +86,27 @@ Linestrip.prototype.snaptest = function(x, y, r, p)
 	}
 
 	return false;
+}
+
+Linestrip.prototype.draw = function(count)
+{
+	this.vbo.upload();
+
+	gfx.blend(gfx.OneMinusDstColor, gfx.OneMinusSrcColor);
+	gfx.bind(gfx.White);
+	gfx.pixelAlign(true);
+
+	if (count > 1)
+	{
+		this.vbo.mode = gfx.LineStrip;
+		gfx.draw(this.vbo, count);
+	}
+
+	this.vbo.mode = gfx.Points;
+	gfx.draw(this.vbo, count);
+
+	gfx.pixelAlign(false);
+	gfx.blend(gfx.Default);
 }
 
 Linestrip.prototype.on = {};
@@ -191,7 +212,7 @@ Linestrip.prototype.on["tooldeactivate"] = function(editor, event)
 	editor.invalidate();
 }
 
-Linestrip.prototype.on["draw"] = function(editor, event)
+Linestrip.prototype.on["postdraw"] = function(editor, event)
 {
 	var points = this.points;
 
@@ -210,16 +231,8 @@ Linestrip.prototype.on["draw"] = function(editor, event)
 				x = points[i].x;
 		}
 
-		this.vbo.set(points.length, x, y, 0, 0, 0, 0, 0, 1);
-		this.vbo.upload();
-
-		gfx.bind(gfx.White);
-		gfx.pixelAlign(true);
-		this.vbo.mode = gfx.LineStrip;
-		gfx.draw(this.vbo, points.length + 1);
-		this.vbo.mode = gfx.Points;
-		gfx.draw(this.vbo, points.length + 1);
-		gfx.pixelAlign(false);
+		this.setBufferPoint(points.length, x, y);
+		this.draw(points.length + 1);
 	}
 	else if (editor.isSnapping())
 	{
@@ -227,13 +240,8 @@ Linestrip.prototype.on["draw"] = function(editor, event)
 		var y = editor.cursor.snapY;
 
 		this.vbo.set(0, x, y, 0, 0, 0, 0, 0, 1);
-		this.vbo.upload();
-
-		gfx.bind(gfx.White);
-		gfx.pixelAlign(true);
-		this.vbo.mode = gfx.Points;
-		gfx.draw(this.vbo, 1);
-		gfx.pixelAlign(false);
+		this.setBufferPoint(0, x, y);
+		this.draw(1);
 	}
 }
 

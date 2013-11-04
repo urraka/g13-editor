@@ -74,12 +74,12 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 	return true;
 }
 
-Grass.prototype.on["draw"] = function(editor, event)
+Grass.prototype.on["postdraw"] = function(editor, event)
 {
 	if (this.borderHook === null || this.points === null || this.ortho || !editor.isSnapping() ||
 		editor.getSnapTarget() === null || editor.getSnapTarget().object !== this.borderHook.object)
 	{
-		g13.tools.Linestrip.prototype.on["draw"].call(this, editor, event);
+		g13.tools.Linestrip.prototype.on["postdraw"].call(this, editor, event);
 		return;
 	}
 
@@ -92,7 +92,6 @@ Grass.prototype.on["draw"] = function(editor, event)
 
 	var count = 0;
 
-
 	for (var i = start; i !== end; i = (i + inc + N) % N)
 	{
 		poly.getPoint((i + inc + N) % N, p);
@@ -100,15 +99,7 @@ Grass.prototype.on["draw"] = function(editor, event)
 		count++;
 	}
 
-	this.vbo.upload();
-
-	gfx.bind(gfx.White);
-	gfx.pixelAlign(true);
-	this.vbo.mode = gfx.LineStrip;
-	gfx.draw(this.vbo, this.points.length + count);
-	this.vbo.mode = gfx.Points;
-	gfx.draw(this.vbo, this.points.length + count);
-	gfx.pixelAlign(false);
+	this.draw(this.points.length + count);
 }
 
 })();
