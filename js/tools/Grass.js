@@ -42,14 +42,14 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 	if (!this.ortho && editor.isSnapping() && editor.getSnapTarget() !== null &&
 		(editor.getSnapTarget().object instanceof g13.Polygon))
 	{
-		if (this.borderHook === null)
+		if (this.borderHook === null || editor.getSnapTarget().object !== this.borderHook.object)
 		{
 			this.borderHook = {
 				object: editor.getSnapTarget().object,
 				start: editor.getSnapTarget().data
 			};
 		}
-		else if (editor.getSnapTarget().object === this.borderHook.object)
+		else
 		{
 			var poly = this.borderHook.object;
 			var start = this.borderHook.start;
@@ -66,10 +66,6 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 
 			this.borderHook.start = end;
 			return false;
-		}
-		else
-		{
-			this.borderHook = null;
 		}
 	}
 	else

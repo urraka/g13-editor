@@ -3,7 +3,11 @@
 g13 = window.g13 || {};
 g13["Editor"] = Editor;
 
-window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame;
+window.requestAnimationFrame = (
+	window.requestAnimationFrame ||
+	window.mozRequestAnimationFrame ||
+	function(f) { setTimeout(f, 16); }
+);
 
 var cache = {
 	matrix: mat3.create()
