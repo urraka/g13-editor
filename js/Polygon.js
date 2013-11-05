@@ -78,6 +78,29 @@ function Polygon(points)
 
 }
 
+Polygon.unserialize = function(data)
+{
+	var polygon = new g13.Polygon(data.points);
+	g13.Object.prototype.unserialize.call(polygon, data);
+
+	polygon.updateLocalBounds();
+	polygon.updateBounds();
+
+	return polygon;
+}
+
+Polygon.prototype.serialize = function()
+{
+	var data = this.base.prototype.serialize.call(this);
+
+	data.points = this.points.slice(0);
+
+	for (var i = 0; i < this.points.length; i++)
+		data.points[i] = {x: this.points[i].x, y: this.points[i].y};
+
+	return data;
+}
+
 Polygon.prototype.export = function()
 {
 	var data = {};

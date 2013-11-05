@@ -8,6 +8,7 @@ var cache = {
 
 function Map()
 {
+	this.name = null;
 	this.width = 0;
 	this.height = 0;
 	this.soldiers = [];
@@ -166,10 +167,42 @@ Map.prototype.export = function()
 
 Map.prototype.serialize = function()
 {
+	var data = {};
+
+	data.width = this.width;
+	data.height = this.height;
+	data.polygons = [];
+	data.grass = [];
+	data.soldiers = [];
+
+	for (var i = 0; i < this.polygons.length; i++)
+		data.polygons.push(this.polygons[i].serialize());
+
+	for (var i = 0; i < this.grass.length; i++)
+		data.grass.push(this.grass[i].serialize());
+
+	for (var i = 0; i < this.soldiers.length; i++)
+		data.soldiers.push(this.soldiers[i].serialize());
+
+	return data;
 }
 
-Map.prototype.unserialize = function(data)
+Map.unserialize = function(editor, data)
 {
+	var map = new g13.Map();
+
+	map.resize(data.width, data.height);
+
+	for (var i = 0; i < data.polygons.length; i++)
+		map.add(g13.Polygon.unserialize(data.polygons[i]));
+
+	for (var i = 0; i < data.grass.length; i++)
+		map.add(g13.Grass.unserialize(data.grass[i], editor.getResource("grass")));
+
+	for (var i = 0; i < data.soldiers.length; i++)
+		map.add(g13.Soldier.unserialize(data.soldiers[i]));
+
+	return map;
 }
 
 })();

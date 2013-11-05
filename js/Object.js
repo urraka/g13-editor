@@ -29,6 +29,36 @@ Object.prototype.hittest    = function(x, y)       { warn(this, "hittest"); }
 Object.prototype.intersects = function(x, y, w, h) { warn(this, "intersects"); }
 Object.prototype.contained  = function(x, y, w, h) { warn(this, "contained"); }
 
+Object.prototype.unserialize = function(data)
+{
+	this.x   = data.x;
+	this.y   = data.y;
+	this.rot = data.rot;
+	this.sx  = data.sx;
+	this.sy  = data.sy;
+	this.kx  = data.kx;
+	this.ky  = data.ky;
+	this.cx  = data.cx;
+	this.cy  = data.cy;
+}
+
+Object.prototype.serialize = function()
+{
+	var data = {};
+
+	data.x   = this.x;
+	data.y   = this.y;
+	data.rot = this.rot;
+	data.sx  = this.sx;
+	data.sy  = this.sy;
+	data.kx  = this.kx;
+	data.ky  = this.ky;
+	data.cx  = this.cx;
+	data.cy  = this.cy;
+
+	return data;
+}
+
 Object.prototype.snaptest = function(x, y, r, p)
 {
 	return false;

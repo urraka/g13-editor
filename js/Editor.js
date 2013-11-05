@@ -26,11 +26,23 @@ function Editor()
 	this.framebuffer = null;
 	this.screenQuad = new gfx.Sprite();
 
+	var loadCount = 0;
+
+	function resourceLoaded()
+	{
+		if (--loadCount === 0)
+			self.event({type: "load"});
+	}
+
 	this.resources = {
 		"soldier": (function() {
 			var tx = new gfx.Texture("res/soldier.png");
 			tx.filter(gfx.LinearMipmapLinear, gfx.Linear);
 			tx.generateMipmap();
+			tx.onload = resourceLoaded;
+
+			loadCount++;
+
 			return tx;
 		})(),
 		"rock": (function() {
@@ -38,6 +50,10 @@ function Editor()
 			tx.filter(gfx.LinearMipmapLinear, gfx.Linear);
 			tx.wrap(gfx.Repeat, gfx.Repeat);
 			tx.generateMipmap();
+			tx.onload = resourceLoaded;
+
+			loadCount++;
+
 			return tx;
 		})(),
 		"grass": (function() {
@@ -46,11 +62,15 @@ function Editor()
 			spritesheet.texture = new gfx.Texture("res/grass.png");
 			spritesheet.texture.filter(gfx.LinearMipmapLinear, gfx.Linear);
 			spritesheet.texture.generateMipmap();
+			spritesheet.texture.onload = resourceLoaded;
+
+			loadCount += 2;
 
 			$.get("res/grass.json", function(data) {
 				spritesheet.width = data.width;
 				spritesheet.height = data.height;
 				spritesheet.sprites = data.sprites;
+				resourceLoaded();
 			}, "json");
 
 			return spritesheet;
@@ -100,7 +120,8 @@ function Editor()
 	// initialize
 
 	this.event({type: "resize"});
-	this.newMap(1500, 800);
+	gfx.target(null);
+	gfx.clear();
 }
 
 Editor.prototype.newMap = function(width, height)
@@ -111,11 +132,78 @@ Editor.prototype.newMap = function(width, height)
 	this.event({type: "newmap", map: this.map});
 }
 
+Editor.prototype.loadMap = function(name)
+{
+	var key = "map-" + name;
+
+	if (key in localStorage)
+	{
+		this.map = g13.Map.unserialize(this, JSON.parse(localStorage[key]));
+		this.map.name = name;
+		this.event({type: "newmap", map: this.map});
+	}
+}
+
+Editor.prototype.load = function()
+{
+}
+
+Editor.prototype.autoLoad = function()
+{
+	if ("autosave" in localStorage)
+	{
+		var data = JSON.parse(localStorage["autosave"]);
+
+		this.map = g13.Map.unserialize(this, data.map);
+		this.map.name = data.name;
+		this.event({type: "newmap", map: this.map});
+
+		return true;
+	}
+
+	return false;
+}
+
+Editor.prototype.autoSave = function()
+{
+	// TODO: check if there are changes, etc
+
+	var data = {
+		name: this.map.name,
+		map: this.map.serialize()
+	};
+
+	localStorage["autosave"] = JSON.stringify(data);
+}
+
 Editor.prototype.save = function()
 {
+	if (this.map.name === null)
+	{
+		this.saveAs();
+	}
+	else
+	{
+		localStorage["map-" + this.map.name] = JSON.stringify(this.map.serialize());
+		this.ui.setTitle(this.map.name);
+	}
+}
+
+Editor.prototype.saveAs = function()
+{
+	var editor = this;
+
 	ui.showModal(this.ui.saveDialog, function(result) {
 		if (result === "ok")
-			console.log("should save");
+		{
+			var name = $(this).find("input").val();
+
+			if (name !== "")
+			{
+				editor.map.name = name;
+				editor.save();
+			}
+		}
 	});
 }
 
@@ -127,7 +215,7 @@ Editor.prototype.export = function()
 	var a = document.createElement("a");
 
 	a.setAttribute("href", url);
-	a.setAttribute("download", "map.json");
+	a.setAttribute("download", this.map.name === null ? "map.json" : this.map.name + ".json");
 	a.click();
 }
 
@@ -148,7 +236,10 @@ Editor.prototype.getSelection = function()
 
 Editor.prototype.getView = function()
 {
-	return this.map.view;
+	if (this.map !== null)
+		return this.map.view;
+
+	return {x: 0, y: 0, zoom: 1};
 }
 
 Editor.prototype.setTool = function(tool)
@@ -226,6 +317,9 @@ Editor.prototype.zoomOut = function()
 
 Editor.prototype.updateCursorPosition = function(x, y)
 {
+	if (this.map === null)
+		return;
+
 	if (arguments.length === 0)
 	{
 		x = this.cursor.absX;
@@ -420,6 +514,20 @@ Editor.prototype.event = function(event)
 
 Editor.prototype.on = {};
 
+Editor.prototype.on["load"] = function(event)
+{
+	if (!this.autoLoad())
+		this.newMap(1500, 800);
+
+	var self = this;
+
+	$(window).on("beforeunload", function() {
+		self.autoSave();
+	});
+
+	// setInterval(function() { self.autoSave(); }, 1000 * 60 * 1);
+}
+
 Editor.prototype.on["mouseenter"] = function(event)
 {
 	this.cursor.active = true;
@@ -446,6 +554,9 @@ Editor.prototype.on["mousedown"] = function(event)
 
 Editor.prototype.draw = function()
 {
+	if (this.map === null)
+		return;
+
 	var view = this.getView();
 
 	gfx.target(this.framebuffer);
@@ -457,11 +568,7 @@ Editor.prototype.draw = function()
 	gfx.scale(view.zoom, view.zoom);
 	gfx.translate(view.x, view.y);
 
-	// this.background.draw();
-
-	if (this.map !== null)
-		this.map.draw(this);
-
+	this.map.draw(this);
 	this.event({type: "draw"});
 
 	gfx.target(null);

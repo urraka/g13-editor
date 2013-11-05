@@ -248,6 +248,29 @@ function Grass(points, spritesheet)
 	this.batch.upload();
 }
 
+Grass.unserialize = function(data, spritesheet)
+{
+	var grass = new g13.Grass(data.points, spritesheet);
+	g13.Object.prototype.unserialize.call(grass, data);
+
+	grass.updateLocalBounds();
+	grass.updateBounds();
+
+	return grass;
+}
+
+Grass.prototype.serialize = function()
+{
+	var data = this.base.prototype.serialize.call(this);
+
+	data.points = this.points.slice(0);
+
+	for (var i = 0; i < this.points.length; i++)
+		data.points[i] = {x: this.points[i].x, y: this.points[i].y};
+
+	return data;
+}
+
 Grass.prototype.updateLocalBounds = function()
 {
 	this.localBounds.x = 0;

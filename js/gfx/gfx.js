@@ -673,7 +673,16 @@ function Texture(image)
 	this.id = gl.createTexture();
 	this.format = gl.RGBA;
 	this.loading = false;
+	this.onload = null;
 	this.mipmap = false;
+
+	var self = this;
+
+	function load_trigger()
+	{
+		if (self.onload)
+			self.onload();
+	}
 
 	gl.bindTexture(gl.TEXTURE_2D, this.id);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -683,9 +692,8 @@ function Texture(image)
 
 	if (arguments.length === 1)
 	{
-		if (image.constructor === String)
+		if (image.constructor === String) // loading from url
 		{
-			var self = this;
 			var src = image;
 			var image = new Image();
 
@@ -703,19 +711,23 @@ function Texture(image)
 
 				if (self.mipmap)
 					self.generateMipmap();
+
+				load_trigger();
 			}
 
 			image.src = src;
 		}
-		else
+		else // loading from image object
 		{
 			this.width = image.width;
 			this.height = image.height;
 
 			gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, gl.UNSIGNED_BYTE, image);
+
+			setTimeout(load_trigger, 0);
 		}
 	}
-	else
+	else // creating empty texture or procedural
 	{
 		this.width = arguments[0];
 		this.height = arguments[1];
@@ -764,6 +776,8 @@ function Texture(image)
 		}
 
 		gl.texImage2D(gl.TEXTURE_2D, 0, type, this.width, this.height, 0, type, gl.UNSIGNED_BYTE, data);
+
+		setTimeout(load_trigger, 0);
 	}
 }
 

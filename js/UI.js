@@ -32,6 +32,7 @@ function UI(editor)
 	ui.command("new"      , function() { editor.newMap(3000*2, 1600*2); });
 	ui.command("open"     , function() {                                });
 	ui.command("save"     , function() { editor.save();                 });
+	ui.command("save_as"  , function() { editor.saveAs();               });
 	ui.command("export"   , function() { editor.export();               });
 	ui.command("copy"     , function() {                                });
 	ui.command("cut"      , function() {                                });
@@ -50,6 +51,7 @@ function UI(editor)
 
 	ui.bind("ctrl+n"       , "new");
 	ui.bind("ctrl+o"       , "open");
+	ui.bind("ctrl+shift+s" , "save_as");
 	ui.bind("ctrl+s"       , "save");
 	ui.bind("ctrl+c"       , "copy");
 	ui.bind("ctrl+x"       , "cut");
@@ -75,16 +77,26 @@ function UI(editor)
 			ui.MenuItem({
 				caption: "File",
 				submenu: ui.Menu([
-					ui.MenuItem({caption: "New...",    command: "new"}),
-					ui.MenuItem({caption: "Open...",   command: "open"}),
-					ui.MenuItem({caption: "Save",      command: "save"}),
+					ui.MenuItem({caption: "New...",     command: "new"}),
+					ui.MenuItem({caption: "Open...",    command: "open"}),
+					ui.MenuItem({caption: "Save",       command: "save"}),
+					ui.MenuItem({caption: "Save As...", command: "save_as"}),
 					ui.Separator(),
-					ui.MenuItem({caption: "Export...", command: "export"})
+					ui.MenuItem({
+						caption: "Export",
+						submenu: ui.Menu([
+							ui.MenuItem({caption: "Game format...", command: "export"}),
+							ui.MenuItem({caption: "Map format...", command: "export"})
+						])
+					})
 				])
 			}),
 			ui.MenuItem({
 				caption: "Edit",
 				submenu: ui.Menu([
+					ui.MenuItem({caption: "Undo",  command: "undo"}),
+					ui.MenuItem({caption: "Redo",  command: "redo"}),
+					ui.Separator(),
 					ui.MenuItem({caption: "Copy",  command: "copy"}),
 					ui.MenuItem({caption: "Cut",   command: "cut"}),
 					ui.MenuItem({caption: "Paste", command: "paste"})
@@ -135,6 +147,7 @@ function UI(editor)
 	$(panels["view"]).append(editor.getCanvas());
 
 	ui.disable("save");
+	ui.disable("save_as");
 	ui.disable("copy");
 	ui.disable("cut");
 	ui.disable("paste");
@@ -144,6 +157,9 @@ function UI(editor)
 	ui.disable("polygon");
 	ui.disable("grass");
 	ui.disable("soldier");
+	ui.disable("zoomin");
+	ui.disable("zoomout");
+	ui.disable("export");
 
 	this.panels = panels;
 
@@ -211,13 +227,19 @@ UI.prototype.setTitle = function(text)
 
 UI.prototype.on = {};
 
-UI.prototype.on["newmap"] = function()
+UI.prototype.on["newmap"] = function(editor, event)
 {
 	ui.enable("save");
+	ui.enable("save_as");
 	ui.enable("select");
 	ui.enable("polygon");
 	ui.enable("grass");
 	ui.enable("soldier");
+	ui.enable("export");
+	ui.enable("zoomin");
+	ui.enable("zoomout");
+
+	this.setTitle(event.map.name === null ? "Untitled" : event.map.name);
 }
 
 })();

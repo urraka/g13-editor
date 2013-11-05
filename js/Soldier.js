@@ -12,6 +12,16 @@ function Soldier(x, y)
 	this.move(x, y);
 }
 
+Soldier.unserialize = function(data)
+{
+	return new g13.Soldier(data.x, data.y);
+}
+
+Soldier.prototype.serialize = function()
+{
+	return {x: this.x, y: this.y};
+}
+
 Soldier.prototype.updateLocalBounds = function()
 {
 	var size = 512 * 1.00390625 * 0.15;
