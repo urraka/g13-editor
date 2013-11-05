@@ -15,7 +15,7 @@ function Grass()
 
 Grass.prototype.on["cancel"] = function(editor, event)
 {
-	g13.Linestrip.prototype.on["cancel"].call(this, editor, event);
+	g13.tools.Linestrip.prototype.on["cancel"].call(this, editor, event);
 	this.borderHook = null;
 }
 
