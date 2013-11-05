@@ -29,25 +29,26 @@ function UI(editor)
 		"grass":   "icon-grass"
 	};
 
-	ui.command("new"      , function() { editor.newMap(3000*2, 1600*2); });
-	ui.command("open"     , function() {                                });
-	ui.command("save"     , function() { editor.save();                 });
-	ui.command("save_as"  , function() { editor.saveAs();               });
-	ui.command("export"   , function() { editor.export();               });
-	ui.command("copy"     , function() {                                });
-	ui.command("cut"      , function() {                                });
-	ui.command("paste"    , function() {                                });
-	ui.command("zoomin"   , function() { editor.zoomIn();               });
-	ui.command("zoomout"  , function() { editor.zoomOut();              });
-	ui.command("resetzoom", function() { editor.setZoom(1);             });
-	ui.command("select"   , function() { editor.setTool("selection");   });
-	ui.command("polygon"  , function() { editor.setTool("polygon");     });
-	ui.command("grass"    , function() { editor.setTool("grass");       });
-	ui.command("soldier"  , function() { editor.setTool("soldier");     });
-	ui.command("cancel"   , function() { editor.cancel();               });
-	ui.command("undo"     , function() { editor.undo();                 });
-	ui.command("redo"     , function() { editor.redo();                 });
-	ui.command("delete"   , function() { editor.delete();               });
+	ui.command("new"          , function() { editor.newMap(3000*2, 1600*2); });
+	ui.command("open"         , function() {                                });
+	ui.command("save"         , function() { editor.save();                 });
+	ui.command("save_as"      , function() { editor.saveAs();               });
+	ui.command("export_editor", function() { editor.export(true);           });
+	ui.command("export_game"  , function() { editor.export(false);          });
+	ui.command("copy"         , function() {                                });
+	ui.command("cut"          , function() {                                });
+	ui.command("paste"        , function() {                                });
+	ui.command("zoomin"       , function() { editor.zoomIn();               });
+	ui.command("zoomout"      , function() { editor.zoomOut();              });
+	ui.command("resetzoom"    , function() { editor.setZoom(1);             });
+	ui.command("select"       , function() { editor.setTool("selection");   });
+	ui.command("polygon"      , function() { editor.setTool("polygon");     });
+	ui.command("grass"        , function() { editor.setTool("grass");       });
+	ui.command("soldier"      , function() { editor.setTool("soldier");     });
+	ui.command("cancel"       , function() { editor.cancel();               });
+	ui.command("undo"         , function() { editor.undo();                 });
+	ui.command("redo"         , function() { editor.redo();                 });
+	ui.command("delete"       , function() { editor.delete();               });
 
 	ui.bind("ctrl+n"       , "new");
 	ui.bind("ctrl+o"       , "open");
@@ -85,8 +86,8 @@ function UI(editor)
 					ui.MenuItem({
 						caption: "Export",
 						submenu: ui.Menu([
-							ui.MenuItem({caption: "Game format...", command: "export"}),
-							ui.MenuItem({caption: "Map format...", command: "export"})
+							ui.MenuItem({caption: "Game format...", command: "export_game"}),
+							ui.MenuItem({caption: "Map format...", command: "export_editor"})
 						])
 					})
 				])
@@ -110,7 +111,6 @@ function UI(editor)
 				btn({icon: ico["new"],     tooltip: "New...",    command: "new"}),
 				btn({icon: ico["open"],    tooltip: "Open...",   command: "open"}),
 				btn({icon: ico["save"],    tooltip: "Save",      command: "save"}),
-				btn({icon: ico["export"],  tooltip: "Export...", command: "export"}),
 				ui.Separator(),
 				btn({icon: ico["copy"],    tooltip: "Copy",      command: "copy"}),
 				btn({icon: ico["cut"],     tooltip: "Cut",       command: "cut"}),
@@ -159,7 +159,6 @@ function UI(editor)
 	ui.disable("soldier");
 	ui.disable("zoomin");
 	ui.disable("zoomout");
-	ui.disable("export");
 
 	this.panels = panels;
 
@@ -235,7 +234,6 @@ UI.prototype.on["newmap"] = function(editor, event)
 	ui.enable("polygon");
 	ui.enable("grass");
 	ui.enable("soldier");
-	ui.enable("export");
 	ui.enable("zoomin");
 	ui.enable("zoomout");
 

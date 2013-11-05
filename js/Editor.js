@@ -211,9 +211,9 @@ Editor.prototype.saveAs = function()
 	});
 }
 
-Editor.prototype.export = function()
+Editor.prototype.export = function(editorFormat)
 {
-	var data = JSON.stringify(this.map.export());
+	var data = editorFormat ? JSON.stringify(this.map.serialize()) : JSON.stringify(this.map.export());
 	var url = URL.createObjectURL(new Blob([data], {type: "application/octet-stream"}));
 
 	var a = document.createElement("a");
