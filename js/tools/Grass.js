@@ -13,6 +13,12 @@ function Grass()
 	this.borderHook = null;
 }
 
+Grass.prototype.on["cancel"] = function(editor, event)
+{
+	g13.Linestrip.prototype.on["cancel"].call(this, editor, event);
+	this.borderHook = null;
+}
+
 Grass.prototype.on["finish"] = function(editor)
 {
 	if (this.points.length < 2)
@@ -58,7 +64,7 @@ Grass.prototype.on["addpoint"] = function(editor, event)
 				this.pushPoint(p.x, p.y);
 			}
 
-			this.borderHook = null;
+			this.borderHook.start = end;
 			return false;
 		}
 		else
