@@ -17,6 +17,7 @@ function Map()
 	this.selection = new g13.Selection();
 	this.view = {x: 0, y: 0, zoom: 1};
 	this.history = { index: -1, actions: [] };
+	this.modified = false;
 
 	this.spriteBatch = new gfx.SpriteBatch(5, gfx.Dynamic);
 }
@@ -171,6 +172,7 @@ Map.prototype.serialize = function()
 
 	data.width = this.width;
 	data.height = this.height;
+	data.view = {x: this.view.x, y: this.view.y, zoom: this.view.zoom};
 	data.polygons = [];
 	data.grass = [];
 	data.soldiers = [];
@@ -192,6 +194,13 @@ Map.unserialize = function(editor, data)
 	var map = new g13.Map();
 
 	map.resize(data.width, data.height);
+
+	if (data.view)
+	{
+		map.view.x    = data.view.x;
+		map.view.y    = data.view.y;
+		map.view.zoom = data.view.zoom;
+	}
 
 	for (var i = 0; i < data.polygons.length; i++)
 		map.add(g13.Polygon.unserialize(data.polygons[i]));

@@ -162,6 +162,12 @@ Editor.prototype.autoLoad = function()
 		this.map.name = data.name;
 		this.event({type: "newmap", map: this.map});
 
+		if (data.modified)
+		{
+			this.map.modified = true;
+			this.ui.setTitle((this.map.name || "Untitled") + " *");
+		}
+
 		return true;
 	}
 
@@ -170,10 +176,11 @@ Editor.prototype.autoLoad = function()
 
 Editor.prototype.autoSave = function()
 {
-	// TODO: check if there are changes, etc
+	// TODO: check if there are changes since last autosave?
 
 	var data = {
 		name: this.map.name,
+		modified: this.map.modified,
 		map: this.map.serialize()
 	};
 
@@ -190,6 +197,7 @@ Editor.prototype.save = function()
 	{
 		localStorage["map-" + this.map.name] = JSON.stringify(this.map.serialize());
 		this.ui.setTitle(this.map.name);
+		this.map.modified = false;
 	}
 }
 
@@ -457,6 +465,11 @@ Editor.prototype.pushHistory = function(action)
 
 	ui.enable("undo");
 	ui.disable("redo");
+
+	if (!this.map.modified)
+		this.ui.setTitle((this.map.name || "Untitled") + " *");
+
+	this.map.modified = true;
 }
 
 Editor.prototype.undo = function()
@@ -529,7 +542,7 @@ Editor.prototype.on["load"] = function(event)
 		self.autoSave();
 	});
 
-	// setInterval(function() { self.autoSave(); }, 1000 * 60 * 1);
+	// setInterval(function() { self.autoSave(); }, 1000 * 60 * 5);
 }
 
 Editor.prototype.on["mouseenter"] = function(event)
