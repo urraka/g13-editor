@@ -44,9 +44,15 @@ function Editor()
 			tx.filter(gfx.LinearMipmapLinear, gfx.Linear);
 			tx.generateMipmap();
 			tx.onload = resourceLoaded;
-
 			loadCount++;
-
+			return tx;
+		})(),
+		"spawnpoint": (function() {
+			var tx = new gfx.Texture("res/flag.png");
+			tx.filter(gfx.LinearMipmapLinear, gfx.Linear);
+			tx.generateMipmap();
+			tx.onload = resourceLoaded;
+			loadCount++;
 			return tx;
 		})(),
 		"rock": (function() {
@@ -55,9 +61,7 @@ function Editor()
 			tx.wrap(gfx.Repeat, gfx.Repeat);
 			tx.generateMipmap();
 			tx.onload = resourceLoaded;
-
 			loadCount++;
-
 			return tx;
 		})(),
 		"grass": (function() {
@@ -103,11 +107,12 @@ function Editor()
 
 	this.tools = {
 		current: null,
-		"selection": new g13.tools.Selection(),
-		"polygon":   new g13.tools.Polygon(),
-		"grass":     new g13.tools.Grass(),
-		"soldier":   new g13.tools.Soldier(),
-		"pan":       new g13.tools.Pan()
+		"selection":  new g13.tools.Selection(),
+		"polygon":    new g13.tools.Polygon(),
+		"grass":      new g13.tools.Grass(),
+		"soldier":    new g13.tools.Soldier(),
+		"spawnpoint": new g13.tools.SpawnPoint(),
+		"pan":        new g13.tools.Pan()
 	};
 
 	for (var i in this.tools)

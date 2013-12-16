@@ -12,21 +12,22 @@ function UI(editor)
 	};
 
 	var ico = {
-		"new":     "icon-file",
-		"open":    "icon-folder-open-alt",
-		"save":    "icon-save",
-		"export":  "icon-exportfile",
-		"copy":    "icon-copy",
-		"cut":     "icon-cut",
-		"paste":   "icon-paste",
-		"undo":    "icon-undo",
-		"redo":    "icon-repeat",
-		"select":  "icon-pointer",
-		"soldier": "icon-male",
-		"zoomin":  "icon-zoom-in",
-		"zoomout": "icon-zoom-out",
-		"polygon": "icon-polygon",
-		"grass":   "icon-grass"
+		"new":        "icon-file",
+		"open":       "icon-folder-open-alt",
+		"save":       "icon-save",
+		"export":     "icon-exportfile",
+		"copy":       "icon-copy",
+		"cut":        "icon-cut",
+		"paste":      "icon-paste",
+		"undo":       "icon-undo",
+		"redo":       "icon-repeat",
+		"select":     "icon-pointer",
+		"soldier":    "icon-male",
+		"zoomin":     "icon-zoom-in",
+		"zoomout":    "icon-zoom-out",
+		"polygon":    "icon-polygon",
+		"grass":      "icon-grass",
+		"spawnpoint": "icon-flag"
 	};
 
 	ui.command("new"          , function() { editor.newMap(3000*2, 1600*2); });
@@ -45,6 +46,7 @@ function UI(editor)
 	ui.command("polygon"      , function() { editor.setTool("polygon");     });
 	ui.command("grass"        , function() { editor.setTool("grass");       });
 	ui.command("soldier"      , function() { editor.setTool("soldier");     });
+	ui.command("spawnpoint"   , function() { editor.setTool("spawnpoint");  });
 	ui.command("cancel"       , function() { editor.cancel();               });
 	ui.command("undo"         , function() { editor.undo();                 });
 	ui.command("redo"         , function() { editor.redo();                 });
@@ -64,6 +66,7 @@ function UI(editor)
 	ui.bind("p"            , "polygon");
 	ui.bind("s"            , "soldier");
 	ui.bind("g"            , "grass");
+	ui.bind("f"            , "spawnpoint");
 	ui.bind("escape"       , "cancel");
 	ui.bind("ctrl+z"       , "undo");
 	ui.bind("ctrl+shift+z" , "redo");
@@ -130,10 +133,11 @@ function UI(editor)
 		ui.Toolbar({
 			layout: "vertical",
 			items: [
-				btn({id: "tb-select",  icon: ico["select"],  tooltip: "Select",  command: "select"}),
-				btn({id: "tb-polygon", icon: ico["polygon"], tooltip: "Polygon", command: "polygon"}),
-				btn({id: "tb-grass",   icon: ico["grass"],   tooltip: "Grass",   command: "grass"}),
-				btn({id: "tb-soldier", icon: ico["soldier"], tooltip: "Soldier", command: "soldier"})
+				btn({id: "tb-select",     icon: ico["select"],     tooltip: "Select",       command: "select"}),
+				btn({id: "tb-polygon",    icon: ico["polygon"],    tooltip: "Polygon",      command: "polygon"}),
+				btn({id: "tb-grass",      icon: ico["grass"],      tooltip: "Grass",        command: "grass"}),
+				btn({id: "tb-soldier",    icon: ico["soldier"],    tooltip: "Soldier",      command: "soldier"}),
+				btn({id: "tb-spawnpoint", icon: ico["spawnpoint"], tooltip: "Spawn Points", command: "spawnpoint"})
 			]
 		}),
 		ui.Separator(true)
@@ -156,6 +160,7 @@ function UI(editor)
 	ui.disable("select");
 	ui.disable("polygon");
 	ui.disable("grass");
+	ui.disable("spawnpoint");
 	ui.disable("soldier");
 	ui.disable("zoomin");
 	ui.disable("zoomout");
@@ -163,10 +168,11 @@ function UI(editor)
 	this.panels = panels;
 
 	this.tools = {
-		"select":  $("#tb-select")[0],
-		"polygon": $("#tb-polygon")[0],
-		"grass":   $("#tb-grass")[0],
-		"soldier": $("#tb-soldier")[0]
+		"select":     $("#tb-select")[0],
+		"polygon":    $("#tb-polygon")[0],
+		"grass":      $("#tb-grass")[0],
+		"soldier":    $("#tb-soldier")[0],
+		"spawnpoint": $("#tb-spawnpoint")[0]
 	};
 
 	// events
@@ -234,6 +240,7 @@ UI.prototype.on["newmap"] = function(editor, event)
 	ui.enable("polygon");
 	ui.enable("grass");
 	ui.enable("soldier");
+	ui.enable("spawnpoint");
 	ui.enable("zoomin");
 	ui.enable("zoomout");
 

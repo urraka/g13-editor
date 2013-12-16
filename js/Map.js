@@ -12,6 +12,7 @@ function Map()
 	this.width = 0;
 	this.height = 0;
 	this.soldiers = [];
+	this.spawnpoints = [];
 	this.polygons = [];
 	this.grass = [];
 	this.selection = new g13.Selection();
@@ -19,7 +20,10 @@ function Map()
 	this.history = { index: -1, actions: [] };
 	this.modified = false;
 
-	this.spriteBatch = new gfx.SpriteBatch(5, gfx.Dynamic);
+	this.spriteBatchs = [
+		new gfx.SpriteBatch(5, gfx.Dynamic),
+		new gfx.SpriteBatch(5, gfx.Dynamic)
+	];
 }
 
 Map.prototype.resize = function(width, height)
@@ -31,7 +35,7 @@ Map.prototype.resize = function(width, height)
 Map.prototype.retrieve = function(x, y, w, h)
 {
 	var objects = [];
-	var collections = [this.soldiers, this.grass, this.polygons];
+	var collections = [this.soldiers, this.spawnpoints, this.grass, this.polygons];
 
 	if (arguments.length === 2)
 	{
@@ -63,9 +67,10 @@ Map.prototype.add = function(object)
 {
 	switch (object.constructor)
 	{
-		case g13.Soldier: this.soldiers.push(object); break;
-		case g13.Polygon: this.polygons.push(object); break;
-		case g13.Grass:   this.grass.push(object);    break;
+		case g13.Soldier:    this.soldiers.push(object);    break;
+		case g13.Polygon:    this.polygons.push(object);    break;
+		case g13.Grass:      this.grass.push(object);       break;
+		case g13.SpawnPoint: this.spawnpoints.push(object); break;
 	}
 }
 
@@ -73,9 +78,10 @@ Map.prototype.remove = function(object)
 {
 	switch (object.constructor)
 	{
-		case g13.Soldier: array_remove(this.soldiers, object); break;
-		case g13.Polygon: array_remove(this.polygons, object); break;
-		case g13.Grass:   array_remove(this.grass, object);    break;
+		case g13.Soldier:    array_remove(this.soldiers,    object); break;
+		case g13.Polygon:    array_remove(this.polygons,    object); break;
+		case g13.Grass:      array_remove(this.grass,       object); break;
+		case g13.SpawnPoint: array_remove(this.spawnpoints, object); break;
 	}
 }
 
@@ -87,7 +93,7 @@ Map.prototype.draw = function(editor)
 	for (var i = 0; i < this.grass.length; i++)
 		this.grass[i].draw(editor);
 
-	var spriteBatch = this.spriteBatch;
+	var spriteBatch = this.spriteBatchs[0];
 
 	if (this.soldiers.length > 0)
 	{
@@ -103,6 +109,23 @@ Map.prototype.draw = function(editor)
 		spriteBatch.texture = editor.getResource("soldier");
 		spriteBatch.draw();
 	}
+
+	var spriteBatch = this.spriteBatchs[1];
+
+	if (this.spawnpoints.length > 0)
+	{
+		if (spriteBatch.maxSize < this.spawnpoints.length)
+			spriteBatch.resize(this.spawnpoints.length);
+
+		spriteBatch.clear();
+
+		for (var i = 0; i < this.spawnpoints.length; i++)
+			spriteBatch.add(this.spawnpoints[i].sprite(cache.sprite));
+
+		spriteBatch.upload();
+		spriteBatch.texture = editor.getResource("spawnpoint");
+		spriteBatch.draw();
+	}
 }
 
 Map.prototype.export = function()
@@ -112,7 +135,8 @@ Map.prototype.export = function()
 		height: this.height,
 		ground: {vbo: [], ibo: []},
 		grass: [],
-		collision: []
+		collision: [],
+		spawnpoints: []
 	};
 
 	var base = 0;
@@ -163,6 +187,14 @@ Map.prototype.export = function()
 		data.collision.push(points);
 	}
 
+	for (var i = 0; i < this.spawnpoints.length; i++)
+	{
+		data.spawnpoints.push({
+			x: Math.floor(this.spawnpoints[i].x * 65536),
+			y: Math.floor(this.spawnpoints[i].y * 65536)
+		});
+	}
+
 	return data;
 }
 
@@ -176,6 +208,7 @@ Map.prototype.serialize = function()
 	data.polygons = [];
 	data.grass = [];
 	data.soldiers = [];
+	data.spawnpoints = [];
 
 	for (var i = 0; i < this.polygons.length; i++)
 		data.polygons.push(this.polygons[i].serialize());
@@ -186,21 +219,31 @@ Map.prototype.serialize = function()
 	for (var i = 0; i < this.soldiers.length; i++)
 		data.soldiers.push(this.soldiers[i].serialize());
 
+	for (var i = 0; i < this.spawnpoints.length; i++)
+		data.spawnpoints.push(this.spawnpoints[i].serialize());
+
 	return data;
 }
 
 Map.unserialize = function(editor, data)
 {
+	// format compatibility
+
+	if (!data.spawnpoints)
+		data.spawnpoints = [];
+
+	if (!data.view)
+		data.view = {x: 0, y: 0, zoom: 1};
+
+	// create map
+
 	var map = new g13.Map();
 
 	map.resize(data.width, data.height);
 
-	if (data.view)
-	{
-		map.view.x    = data.view.x;
-		map.view.y    = data.view.y;
-		map.view.zoom = data.view.zoom;
-	}
+	map.view.x    = data.view.x;
+	map.view.y    = data.view.y;
+	map.view.zoom = data.view.zoom;
 
 	for (var i = 0; i < data.polygons.length; i++)
 		map.add(g13.Polygon.unserialize(data.polygons[i]));
@@ -210,6 +253,9 @@ Map.unserialize = function(editor, data)
 
 	for (var i = 0; i < data.soldiers.length; i++)
 		map.add(g13.Soldier.unserialize(data.soldiers[i]));
+
+	for (var i = 0; i < data.spawnpoints.length; i++)
+		map.add(g13.SpawnPoint.unserialize(data.spawnpoints[i]));
 
 	return map;
 }
